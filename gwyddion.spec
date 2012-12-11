@@ -37,6 +37,7 @@ BuildRequires: sed
 BuildRequires: gtksourceview2-devel
 BuildRequires: pygtk2-devel
 BuildRequires: python2-devel >= 2.2
+BuildRequires: ruby
 
 %if %{enable_kde4_thumbnailer}
 BuildRequires: kdelibs-devel >= 4.0
