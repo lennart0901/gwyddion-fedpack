@@ -71,6 +71,21 @@ Requires:      pkgconfig
 Summary:       API documentation of Gwyddion
 Group:         Documentation
 
+%package perl-plugin-module
+Summary: Perl module to read Gwyddion dump files used in plug-ins
+Requires: %{name}%{?_isa} = %{version}-%{release}
+Requires: perl
+
+%package python-plugin-module
+Summary: Python module to read Gwyddion dump files used in plug-ins
+Requires: %{name}%{?_isa} = %{version}-%{release}
+Requires: python2 >= 2.2
+
+%package ruby-plugin-module
+Summary: Ruby module to read Gwyddion dump files used in plug-ins
+Requires: %{name}%{?_isa} = %{version}-%{release}
+Requires: ruby
+
 %package thumbnailer-gconf
 Summary:         GConf schemas for gwyddion-thumbnailer integration
 Group:           System Environment/Libraries
@@ -90,7 +105,6 @@ Requires: %{name}%{?_isa} = %{version}-%{release}
 Requires:        %{kde4libs} >= 4.0
 %endif
 
-
 %description
 Gwyddion is a modular SPM (Scanning Probe Microsopy) data visualization and
 analysis tool written with Gtk+.
@@ -109,14 +123,21 @@ With the pygwy Gwyddion module Gwyddion modules can be written in Python.
 %description devel
 Header files, libraries and tools for Gwyddion module development.
 
-
 %description devel-doc
 API documentation for Gwyddion.
+
+%description perl-plugin-module
+Perl module to read Gwyddion dump files used in plug-ins.
+
+%description python-plugin-module
+Python module to read Gwyddion dump files used in plug-ins.
+
+%description ruby-plugin-module
+Ruby module to read Gwyddion dump files used in plug-ins.
 
 %description thumbnailer-gconf
 GConf schemas that register gwyddion-thumbnailer as thumbnailer for SPM files
 in GNOME and XFce.
-
 
 %if %{enable_kde4_thumbnailer}
 %description thumbnailer-kde4
@@ -147,19 +168,14 @@ make install DESTDIR=%{buildroot}
 
 %find_lang %{name}
 
-# I cannot express this as %%files in a sensible manner, especially not when
-# python byte-compilation kicks in.  Set permissions in the filesystem.
-find %{buildroot}/%{pkglibexecdir} -type f -print0 | xargs -0 chmod 755
-find %{buildroot}/%{pkglibexecdir} -type f -name \*.rgi -print0 | xargs -0 chmod 644
-
 # Perl, Python, and Ruby modules are private, remove the Perl man page.
 rm -f %{buildroot}/%{_mandir}/man3/Gwyddion::dump.*
 
 #remove plugin related stuff
 rm -rf %{buildroot}/%{pkglibexecdir}/plugins/*
-rm -rf %{buildroot}/%{pkglibdir}/perl
-rm -rf %{buildroot}/%{pkglibdir}/python
-rm -rf %{buildroot}/%{pkglibdir}/ruby
+#rm -rf %{buildroot}/%{pkglibdir}/perl
+#rm -rf %{buildroot}/%{pkglibdir}/python
+#rm -rf %{buildroot}/%{pkglibdir}/ruby
 
 %check
 desktop-file-validate %{buildroot}/%{_datadir}/applications/%{name}.desktop
@@ -200,29 +216,15 @@ fi
 %doc AUTHORS COPYING INSTALL.%{name} NEWS README THANKS
 %{pkgdatadir}/pixmaps/*.png
 %{pkgdatadir}/pixmaps/*.ico
-%{pkgdatadir}/gradients/*
-%{pkgdatadir}/glmaterials/*
-%{pkgdatadir}/ui/*
 %dir %{pkgdatadir}/pixmaps
-%dir %{pkgdatadir}/gradients
-%dir %{pkgdatadir}/glmaterials
-%dir %{pkgdatadir}/ui
+%{pkgdatadir}/gradients/
+%{pkgdatadir}/glmaterials/
+%{pkgdatadir}/ui/
 %dir %{pkgdatadir}
 %{_mandir}/man1/%{name}.1*
 %{_mandir}/man1/%{name}-thumbnailer.1*
 %{_datadir}/icons/hicolor/48x48/apps/%{name}.png
-%{pkglibdir}/modules/file/*.so
-%{pkglibdir}/modules/graph/*.so
-%{pkglibdir}/modules/layer/*.so
-%{pkglibdir}/modules/process/*.so
-%{pkglibdir}/modules/tool/*.so
-%{pkglibdir}/modules/plugin-proxy.so
-%dir %{pkglibdir}/modules/file
-%dir %{pkglibdir}/modules/graph
-%dir %{pkglibdir}/modules/layer
-%dir %{pkglibdir}/modules/process
-%dir %{pkglibdir}/modules/tool
-%dir %{pkglibdir}/modules
+%{pkglibdir}/modules/
 %dir %{pkglibdir}
 %{_libdir}/*.so.*
 %{_datadir}/applications/%{name}.desktop
@@ -233,65 +235,37 @@ fi
 %defattr(-,root,root)
 %{pkglibdir}/modules/pygwy.so
 %{python_sitearch}/gwy.so
-%{pkgdatadir}/pygwy/*
-%dir %{pkgdatadir}/pygwy
+%{pkgdatadir}/pygwy/
 
 %files devel
 %defattr(-,root,root)
 %doc devel-docs/CODING-STANDARDS
 %doc data/%{name}.vim
-%{pkgincludedir}/app/*.h
-%{pkgincludedir}/libdraw/*.h
-%{pkgincludedir}/libprocess/*.h
-%{pkgincludedir}/libgwyddion/*.h
-%{pkgincludedir}/libgwydgets/*.h
-%{pkgincludedir}/libgwymodule/*.h
-%dir %{pkgincludedir}/app
-%dir %{pkgincludedir}/libdraw
-%dir %{pkgincludedir}/libprocess
-%dir %{pkgincludedir}/libgwyddion
-%dir %{pkgincludedir}/libgwydgets
-%dir %{pkgincludedir}/libgwymodule
-%dir %{pkgincludedir}
+%{pkgincludedir}/
 %{_libdir}/*.so
 %{_libdir}/pkgconfig/gwyddion.pc
 %{pkglibdir}/include/gwyconfig.h
 %dir %{pkglibdir}/include
-# Plug-ins and plug-in devel stuff disabled
-#%{pkglibdir}/perl/Gwyddion/*
-#%dir %{pkglibdir}/perl/Gwyddion
-#%dir %{pkglibdir}/perl
-#%{pkglibdir}/python/Gwyddion/*
-#%dir %{pkglibdir}/python/Gwyddion
-#%dir %{pkglibdir}/python
-#%{pkglibdir}/ruby/gwyddion/*
-#%dir %{pkglibdir}/ruby/gwyddion
-#%dir %{pkglibdir}/ruby
-# Use filesystem permissions here.
-#%defattr(-,root,root,755)
-#%{pkglibexecdir}/plugins/file/*
-#%{pkglibexecdir}/plugins/process/*
-#%dir %{pkglibexecdir}/plugins/file
-#%dir %{pkglibexecdir}/plugins/process
 %dir %{pkglibexecdir}/plugins
 %dir %{pkglibexecdir}
 
 %files devel-doc
 %defattr(-,root,root)
-%doc %{gtkdocdir}/libgwyapp/*
-%doc %{gtkdocdir}/libgwydraw/*
-%doc %{gtkdocdir}/libgwyprocess/*
-%doc %{gtkdocdir}/libgwyddion/*
-%doc %{gtkdocdir}/libgwydgets/*
-%doc %{gtkdocdir}/libgwymodule/*
-%doc %dir %{gtkdocdir}/libgwyapp
-%doc %dir %{gtkdocdir}/libgwydraw
-%doc %dir %{gtkdocdir}/libgwyprocess
-%doc %dir %{gtkdocdir}/libgwyddion
-%doc %dir %{gtkdocdir}/libgwydgets
-%doc %dir %{gtkdocdir}/libgwymodule
-%doc %dir %{gtkdocdir}
+%doc %{gtkdocdir}
 %doc %dir %{_datadir}/gtk-doc
+
+%files perl-plugin-module
+%{pkglibdir}/perl
+%doc plugins/process/invert_perl.pl
+
+%files python-plugin-module
+%{pkglibdir}/python
+%doc plugins/process/invert_python.py
+
+%files ruby-plugin-module
+%{pkglibdir}/ruby
+%doc plugins/process/invert_ruby.rb
+%doc plugins/process/invert_narray.rb
 
 %files thumbnailer-gconf
 %defattr(-,root,root)
@@ -308,6 +282,7 @@ fi
 - removed commented sections
 - split off pygwy
 - added icon-cache scriptlets
+- added plug-ins
 
 * Sun Dec  9 2012 Lennart Fricke <lennart.fricke@kabelmail.de> - 2.30-1
 - modified spec for fedora packaging
