@@ -5,7 +5,7 @@
 
 Name:          gwyddion
 Version:       2.30
-Release:       2
+Release:       3
 Summary:       An SPM data visualization and analysis tool
 
 Group:         Applications/Engineering
@@ -159,7 +159,7 @@ sed -i -e '1s/env *//' plugins/process/*.{py,rb,pl}
 %build
 %configure --without-pascal --disable-rpath \
            --without-kde4-thumbnailer %{?_with_kde4_thumbnailer}
-make %{?_smp_mflags}
+make V=1 %{?_smp_mflags}
 
 
 %install
@@ -226,17 +226,22 @@ fi
 %{_mandir}/man1/%{name}-thumbnailer.1*
 %{_datadir}/icons/hicolor/48x48/apps/%{name}.png
 %{pkglibdir}/modules/
+%exclude %{pkglibdir}/modules/pygwy.so
 %dir %{pkglibdir}
 %{_libdir}/*.so.*
 %{_datadir}/applications/%{name}.desktop
 %{_datadir}/mime/packages/%{name}.xml
 %{_datadir}/thumbnailers/%{name}.thumbnailer
+%dir %{pkglibexecdir}/plugins
+%dir %{pkglibexecdir}
 
 %files pygwy
 %defattr(-,root,root)
 %{pkglibdir}/modules/pygwy.so
 %{python_sitearch}/gwy.so
 %{pkgdatadir}/pygwy/
+%dir %{pkgdatadir}/pygwy/
+
 
 %files devel
 %defattr(-,root,root)
@@ -247,8 +252,7 @@ fi
 %{_libdir}/pkgconfig/gwyddion.pc
 %{pkglibdir}/include/gwyconfig.h
 %dir %{pkglibdir}/include
-%dir %{pkglibexecdir}/plugins
-%dir %{pkglibexecdir}
+
 
 %files devel-doc
 %defattr(-,root,root)
@@ -279,6 +283,10 @@ fi
 %endif
 
 %changelog
+* Wed Dec 26 2012 Lennart Fricke <lennart@tee.lan> - 2.30-3
+- Removed pygwy.so from main package
+- Added libexec directories to main package
+
 * Mon Dec 10 2012 Lennart Fricke <lennart.fricke@kabelmail.de> - 2.30-2
 - removed commented sections
 - split off pygwy
