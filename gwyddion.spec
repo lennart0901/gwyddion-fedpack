@@ -80,8 +80,8 @@ BuildArch:     noarch
 Summary: Scripting language modules and example plugins for Gwyddion
 Requires: %{name}%{?_isa} = %{version}-%{release}
 Requires: perl
-Requires: python2 >= 2.2
-Requires: ruby
+Requires: python(abi) >= 2.2
+Requires: ruby(abi) >= 1.8
 
 %package thumbnailer-gconf
 Summary:         GConf schemas for gwyddion-thumbnailer integration
