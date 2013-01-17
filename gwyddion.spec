@@ -5,7 +5,7 @@
 
 Name:          gwyddion
 Version:       2.30
-Release:       3
+Release:       4
 Summary:       An SPM data visualization and analysis tool
 
 Group:         Applications/Engineering
@@ -43,9 +43,6 @@ BuildRequires: ruby
 BuildRequires: kdelibs-devel >= 4.0
 %endif
 
-# The only packaged perl module is private, don't expose it.
-%global __perl_provides %{nil}
-
 %global pkglibdir %{_libdir}/%{name}
 %global pkglibexecdir %{_libexecdir}/%{name}
 %global pkgdatadir %{_datadir}/%{name}
@@ -54,6 +51,11 @@ BuildRequires: kdelibs-devel >= 4.0
 %global gconfdir %{_sysconfdir}/gconf/schemas
 
 %global schemas %{gconfdir}/gwyddion-thumbnailer.schemas
+
+
+# The only packaged perl module is private, don't expose it.
+%define __provides_exclude_from ^%{pkglibdir}/.*
+%define __provides_exclude ^perl.*dump$
 
 %package pygwy
 Summary: Gwyddion module with embedded python
@@ -70,28 +72,23 @@ Requires:      pkgconfig
 
 %package devel-doc
 Summary:       API documentation of Gwyddion
+Requires: %{name} = %{version}-%{release}
 Group:         Documentation
+BuildArch:     noarch
 
-%package perl-plugin-module
-Summary: Perl module to read Gwyddion dump files used in plug-ins
+%package plugin-devel
+Summary: Scripting language modules and example plugins for Gwyddion
 Requires: %{name}%{?_isa} = %{version}-%{release}
 Requires: perl
-
-%package python-plugin-module
-Summary: Python module to read Gwyddion dump files used in plug-ins
-Requires: %{name}%{?_isa} = %{version}-%{release}
 Requires: python2 >= 2.2
-
-%package ruby-plugin-module
-Summary: Ruby module to read Gwyddion dump files used in plug-ins
-Requires: %{name}%{?_isa} = %{version}-%{release}
 Requires: ruby
 
 %package thumbnailer-gconf
 Summary:         GConf schemas for gwyddion-thumbnailer integration
 Group:           System Environment/Libraries
+BuildArch:       noarch
 BuildRequires: GConf2
-Requires: %{name}%{?_isa} = %{version}-%{release}
+Requires: %{name} = %{version}-%{release}
 Requires(pre):   GConf2
 Requires(post):  GConf2
 Requires(preun): GConf2
@@ -120,6 +117,7 @@ other 2D data.
 
 %description pygwy
 With the pygwy Gwyddion module Gwyddion modules can be written in Python.
+Moreover an experimental python extension is provided.
 
 %description devel
 Header files, libraries and tools for Gwyddion module development.
@@ -127,14 +125,10 @@ Header files, libraries and tools for Gwyddion module development.
 %description devel-doc
 API documentation for Gwyddion.
 
-%description perl-plugin-module
-Perl module to read Gwyddion dump files used in plug-ins.
-
-%description python-plugin-module
-Python module to read Gwyddion dump files used in plug-ins.
-
-%description ruby-plugin-module
-Ruby module to read Gwyddion dump files used in plug-ins.
+%description plugin-devel 
+Helper modules for Perl, Python and Ruby, that are used for plugin
+development, and example plugins. The plugin system is deprecated,
+better write modules instead.
 
 %description thumbnailer-gconf
 GConf schemas that register gwyddion-thumbnailer as thumbnailer for SPM files
@@ -173,10 +167,7 @@ make install DESTDIR=%{buildroot}
 rm -f %{buildroot}/%{_mandir}/man3/Gwyddion::dump.*
 
 #remove plugin related stuff
-rm -rf %{buildroot}/%{pkglibexecdir}/plugins/*
-#rm -rf %{buildroot}/%{pkglibdir}/perl
-#rm -rf %{buildroot}/%{pkglibdir}/python
-#rm -rf %{buildroot}/%{pkglibdir}/ruby
+rm -rf %{buildroot}/%{pkglibexecdir}/plugins/process/invert_narray.rb*
 
 %check
 desktop-file-validate %{buildroot}/%{_datadir}/applications/%{name}.desktop
@@ -259,17 +250,12 @@ fi
 %doc %{gtkdocdir}
 %doc %dir %{_datadir}/gtk-doc
 
-%files perl-plugin-module
+%files plugin-devel
 %{pkglibdir}/perl
-%doc plugins/process/invert_perl.pl
-
-%files python-plugin-module
 %{pkglibdir}/python
-%doc plugins/process/invert_python.py
-
-%files ruby-plugin-module
 %{pkglibdir}/ruby
-%doc plugins/process/invert_ruby.rb
+%{pkglibexecdir}/plugins/*
+%doc perl/Gwyddion::dump.3pm
 %doc plugins/process/invert_narray.rb
 
 %files thumbnailer-gconf
@@ -283,6 +269,10 @@ fi
 %endif
 
 %changelog
+* Thu Jan 17 2013 Lennart Fricke <lennart@tee.lan> - 2.30-4
+- Filtered modules from provides
+- Merged plugin subpackages
+
 * Wed Dec 26 2012 Lennart Fricke <lennart@tee.lan> - 2.30-3
 - Removed pygwy.so from main package
 - Added libexec directories to main package
